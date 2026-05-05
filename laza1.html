@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestion Boutique</title>
+
+  <style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f4f6f9;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #2c3e50, #4ca1af);
+  color: white;
+  padding: 25px 20px;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.header p {
+  margin-top: 5px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* CARD */
+.card {
+  background: white;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  line-height: 1.6;
+  font-size: 15px;
+  color: #555;
+}
+
+/* BUTTONS CONTAINER */
+.actions {
+  margin-top: 20px;
+}
+
+/* BUTTON BASE */
+.btn {
+  width: 90%;
+  margin: 12px auto;
+  padding: 16px;
+  border: none;
+  border-radius: 18px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+/* COLORS */
+.btn-add {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
+.btn-sell {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.btn-stock {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+/* HOVER / CLICK */
+.btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+/* PAGE SYSTEM */
+.page {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+/* TITLES */
+h2 {
+  text-align: center;
+  margin-top: 20px;
+  color: #2c3e50;
+}
+
+/* RETOUR BUTTON */
+.back-btn {
+  display: block;
+  margin: 10px auto;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #ddd;
+}
+
+/* INPUTS (IMPORTANT pour pro) */
+input {
+  width: 85%;
+  padding: 12px;
+  margin: 8px auto;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* BUTTON ACTION */
+.action-btn {
+  background: #2c3e50;
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-top: 10px;
+}
+
+/* SHADOW DEPTH */
+.card:hover {
+  transform: translateY(-2px);
+  transition: 0.2s;
+}
+.produit {
+  background: #f9f9f9;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.stock-faible {
+  color: red;
+  font-weight: bold;
+}
+#resultatVente {
+  margin-top: 15px;
+  padding: 10px;
+  background: #f1f1f1;
+  border-radius: 10px;
+  white-space: pre-line;
+  text-align: left;
+}
+.btn-delete {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #e74c3c;
+  color: white;
+  font-size: 13px;
+}
+#searchInput {
+  width: 90%;
+  padding: 12px;
+  margin: 10px auto;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.table th, .table td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.table th {
+  background: #f0f3f7;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.table tr:hover {
+  background: #f9f9f9;
+}
+.total-jour {
+  text-align: right;
+  font-weight: bold;
+  margin-top: 10px;
+  background: #ecf0f1;
+  padding: 8px;
+  border-radius: 8px;
+}
+.total-global {
+  margin-top: 20px;
+  padding: 12px;
+  background: #2c3e50;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 12px;
+  font-size: 16px;
+  
+}
+#zoneRecu {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.header {
+  position: relative; /* IMPORTANT */
+}
+
+.top-back-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  background: beige;
+  color: #2c3e50;
+
+  border: none;
+  border-radius: 12px;
+
+  padding: 18px 24px;
+  font-size: 14px;
+  font-weight: bold;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.stock-ok {
+  color: green;
+  font-weight: bold;
+}
+
+.stock-faible {
+  color: red;
+  font-weight: bold;
+}
+.btn-install {
+  width: 90%;
+  margin: 20px auto;
+  padding: 16px;
+
+  background: linear-gradient(135deg, #8e44ad, #6c5ce7);
+  color: white;
+
+  border: none;
+  border-radius: 18px;
+
+  font-size: 16px;
+  font-weight: bold;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+
+  transition: 0.2s;
+}
+
+/* effet clic */
+.btn-install:active {
+  transform: scale(0.95);
+}
+
+/* caché par défaut */
+#installBtn {
+  display: none;
+}
+  </style>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2c3e50">
+</head>
+
+<body>
+
+<!-- PAGE 1 -->
+<div id="home" class="page active">
+
+  <h1>👋 Tongasoa</h1>
+
+  <div class="card">
+    <p>
+      tongasoa eto amin'ny sehatra fitantanana varotra,<br>
+      natao hanamorana sy anafainganana ny fitantanana ny varotra<br>
+      fa indrindra ny fanenana ny fahadisoana
+    </p>
+  </div>
+<div class="header">
+  <h1>Gestion Boutique</h1>
+  <p>Application de gestion de vente</p>
+</div>
+  <button class="btn btn-add" onclick="showPage('add')">
+    ➕ Ampiditra entana
+  </button>
+
+  <button class="btn btn-sell" onclick="showPage('sell')">
+    💰 Hivarotra
+  </button>
+
+  <button class="btn btn-stock" onclick="showPage('stock')">
+    📦 Hijery stock
+  </button>
+<button class="btn btn-sell" onclick="showPage('historySell')">
+  📜 Historique Vente
+</button>
+<button id="installBtn" class="btn-install" onclick="installerApp()">
+  📲 Installer l'application
+</button>
+</div>
+
+
+<!-- PAGE 2 : AJOUT PRODUIT -->
+<div id="add" class="page">
+
+<div class="header">
+  <button class="top-back-btn" onclick="showPage('home')">   ⬅ Retour </button>
+  <h1>Ampiditra entana</h1>
+  <p>Manampy entana vaovao</p>
+</div>
+
+  <div class="card">
+
+    <h2>Formulaire</h2>
+
+    <input type="text" id="nomProduit" placeholder="Anaran'ny entana">
+
+    <input type="number" id="quantiteProduit" placeholder="Ny isany (nombre)">
+
+    <input type="number" id="prixProduit" placeholder="Vidiny">
+
+    <button class="action-btn" onclick="ajouterProduit()">
+      ✔️ ampidirina
+    </button>
+
+  </div>
+
+  
+  
+</div>
+<!-- PAGE 3 : VENTE -->
+<div id="sell" class="page">
+
+<div class="header">
+  <button class="top-back-btn" onclick="showPage('home')">   ⬅ Retour </button>
+  <h1>Hivarotra</h1>
+  <p>Fivarotana entana</p>
+</div>
+
+<div class="card">
+
+  <h2>Vente</h2>
+
+  <div id="zoneProduits"></div>
+
+  <button class="action-btn" onclick="ajouterLigne()">
+    ➕ mampiditra entana
+  </button>
+
+  <button class="action-btn" onclick="vendre()">
+    💰 Vendre
+  </button>
+
+  <div id="totalAuto" style="margin-top:10px;font-weight:bold;"></div>
+<div id="resultatVente"></div>
+</div>
+  
+
+</div>
+<!-- PAGE 4 : STOCK -->
+<div id="stock" class="page">
+
+<div class="header">
+  <button class="top-back-btn" onclick="showPage('home')">   ⬅ Retour </button>
+  <h1>Stock</h1>
+  <p>Lisitry ny entana</p>
+</div>
+
+  <div class="card">
+    <h2>Produits</h2>
+    <button class="action-btn" onclick="exportData()">
+  💾 Sauvegarder
+</button>
+<input type="file" accept=".xlsx,.xls,.csv" onchange="importExcel(event)">
+
+<input 
+  type="text"
+  id="searchInput"
+  placeholder="🔍 Rechercher produit..."
+  oninput="afficherStock()"
+/>
+
+<div id="listeProduits"></div>
+  </div>
+
+  
+
+</div>
+
+<div id="historySell" class="page">
+
+<div class="header">
+  <button class="top-back-btn" onclick="showPage('home')">   ⬅ Retour </button>
+  <h1>Historique Vente</h1>
+</div>
+  <button class="action-btn" onclick="exportData()">
+  💾 Sauvegarder
+</button>
+
+<input 
+  type="text" 
+  id="searchHistorique" 
+  placeholder="🔍 Rechercher produit..."
+  oninput="afficherHistoriqueVente()"
+/>
+
+<div class="card">
+  <div id="listeVente"></div>
+</div>
+  
+
+
+</div>
+
+<!-- 🔥 ICI tu ajoutes Firebase -->
+
+<script src="localforage.min.js"></script>
+<script src="xlsx.full.min.js"></script>
+
+
+
+<script>
+function showPage(pageId) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(pageId).classList.add("active");
+
+  if (pageId === "stock") afficherStock();
+  if (pageId === "historySell") afficherHistoriqueVente();
+}
+/* STOCKAGE LOCAL */
+let produits = [];
+let historique = [];
+let panier = [];
+
+let lignes = [];
+// charger depuis localForage
+async function chargerDonnees() {
+
+  produits = await localforage.getItem("produits");
+  historique = await localforage.getItem("historique");
+
+  // 🔥 SI VIDE → utiliser backup
+  if (!produits) {
+    produits = JSON.parse(localStorage.getItem("produits_backup")) || [];
+  }
+
+  if (!historique) {
+    historique = JSON.parse(localStorage.getItem("historique_backup")) || [];
+  }
+
+  console.log("✅ Données chargées");
+}
+function ajouterProduit() {
+  let nom = document.getElementById("nomProduit").value.trim();
+  let qte = parseInt(document.getElementById("quantiteProduit").value);
+  let prix = parseFloat(document.getElementById("prixProduit").value);
+
+  if (!nom || !qte || !prix) {
+    alert("Fenoy daholo ny banga !");
+    return;
+  }
+
+  // 🔍 Vérifier si produit existe déjà
+  let existant = produits.find(p => p.nom.toLowerCase() === nom.toLowerCase());
+
+  if (existant) {
+    // 👉 mise à jour isany
+    existant.quantite += qte;
+
+    // 👉 option: mettre à jour prix aussi
+    existant.prix = prix;
+
+    alert("vokatra efa misy,  ✔️\nisa mitombo");
+  } else {
+    // 👉 nouveau produit
+    produits.push({
+      nom: nom,
+      quantite: qte,
+      prix: prix
+    });
+
+    alert("Nouveau produit ajouté ✔️");
+  }
+
+  
+historique.push({
+  type: "ajout",
+  nom: nom,
+  quantite: qte,
+  prix: prix,
+  date: new Date().toISOString()
+});
+sauvegardeAuto();
+
+
+  // reset
+  document.getElementById("nomProduit").value = "";
+  document.getElementById("quantiteProduit").value = "";
+  document.getElementById("prixProduit").value = "";
+}
+
+
+
+function supprimerProduit(index) {
+  let confirmDelete = confirm("Supprimer ce produit ?");
+
+  if (!confirmDelete) return;
+
+  produits.splice(index, 1);
+
+  sauvegardeAuto();
+
+  afficherStock(); // refresh
+}
+function normaliser(txt) {
+  return txt
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+function afficherStock() {
+  let container = document.getElementById("listeProduits");
+  let input = document.getElementById("searchInput");
+let search = input ? input.value.toLowerCase() : "";
+
+  container.innerHTML = "";
+  
+  
+
+  let filtres = produits.filter(p =>
+    normaliser(p.nom).includes(normaliser(search))
+  );
+filtres.sort((a, b) => a.nom.localeCompare(b.nom));
+  if (filtres.length === 0) {
+    container.innerHTML = "Aucun produit trouvé";
+    return;
+  }
+
+  filtres.forEach((p) => {
+  let vraiIndex = produits.indexOf(p);
+    let div = document.createElement("div");
+    div.className = "produit";
+
+    let alerte = p.quantite <= 5 ? "stock-faible" : "";
+
+    div.innerHTML = `
+      <strong>${p.nom}</strong><br>
+      isany: <span class="${alerte}">${p.quantite}</span><br>
+      Prix: ${p.prix} Ar<br>
+
+      <button onclick="supprimerProduit(${vraiIndex})" class="btn-delete">
+        ❌ Supprimer
+      </button>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+function afficherHistoriqueVente() {
+  let container = document.getElementById("listeVente");
+
+  let input = document.getElementById("searchHistorique");
+  let search = input ? input.value.toLowerCase() : "";
+
+  container.innerHTML = "";
+
+  let totalGeneral = 0; // ✅ AJOUT IMPORTANT
+
+  let ventes = historique
+    .filter(h => h.type === "vente")
+    .filter(h => h.nom.toLowerCase().includes(search))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  if (ventes.length === 0) {
+    container.innerHTML = "Aucune vente trouvée";
+    return;
+  }
+
+  let groupes = {};
+
+  ventes.forEach((h) => {
+    let dateSimple = new Date(h.date).toLocaleDateString();
+
+    if (!groupes[dateSimple]) {
+      groupes[dateSimple] = [];
+    }
+
+    groupes[dateSimple].push({ ...h, indexGlobal: historique.indexOf(h) });
+  });
+
+  Object.keys(groupes).forEach(date => {
+
+    let dateDiv = document.createElement("div");
+    dateDiv.innerHTML = `
+      <h3>
+        📅 ${date}
+        <button onclick="supprimerDate('${date}')" class="btn-delete">
+          ❌ supprimer date
+        </button>
+      </h3>
+    `;
+    container.appendChild(dateDiv);
+
+    let table = document.createElement("table");
+    table.className = "table";
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Nombre</th>
+          <th>PU (Ar)</th>
+          <th>Total (Ar)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+
+    let tbody = table.querySelector("tbody");
+    let totalJour = 0;
+
+    groupes[date].forEach(h => {
+      let row = document.createElement("tr");
+
+      totalJour += h.total;
+      totalGeneral += h.total;
+
+      row.innerHTML = `
+        <td>${h.nom}</td>
+        <td>${h.quantite}</td>
+        <td>${formatAriary(h.prix)}</td>
+        <td>${formatAriary(h.total)}</td>
+        <td>
+          <button onclick="supprimerHistorique(${h.indexGlobal})" class="btn-delete">
+            ❌
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(row);
+    });
+
+    container.appendChild(table);
+
+    let totalDiv = document.createElement("div");
+    totalDiv.className = "total-jour";
+    totalDiv.innerHTML = "💰 Total du jour : " + formatAriary(totalJour);
+
+    container.appendChild(totalDiv);
+  });
+
+  // ✅ TOTAL GLOBAL (ICI EXACTEMENT)
+  let totalGlobalDiv = document.createElement("div");
+  totalGlobalDiv.className = "total-global";
+  totalGlobalDiv.innerHTML = "💰 TOTAL GÉNÉRAL : " + formatAriary(totalGeneral);
+
+  container.appendChild(totalGlobalDiv);
+}
+function supprimerHistorique(index) {
+  if (!confirm("Supprimer ce produit ?")) return;
+
+  historique.splice(index, 1);
+  sauvegardeAuto();
+  
+  afficherHistoriqueVente();
+}
+
+function supprimerDate(date) {
+  if (!confirm("Supprimer toute cette date ?")) return;
+
+  historique = historique.filter(h => {
+    let d = new Date(h.date).toLocaleDateString();
+    return d !== date;
+  });
+
+  sauvegardeAuto();
+  
+  afficherHistoriqueVente();
+}
+function formatAriary(nombre) {
+  return nombre.toLocaleString("fr-FR") + " Ar";
+}
+
+  
+
+async function exportData() {
+  let data = {
+    produits: produits,
+    historique: historique
+  };
+
+  let json = JSON.stringify(data, null, 2);
+  let blob = new Blob([json], { type: "application/json" });
+
+  let url = URL.createObjectURL(blob);
+
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "backup_boutique.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  alert("✅ Fichier sauvegardé dans Download");
+}
+async function sauvegardeAuto() {
+  await localforage.setItem("produits", produits);
+  await localforage.setItem("historique", historique);
+
+  // 🔥 BACKUP LOCAL
+  localStorage.setItem("produits_backup", JSON.stringify(produits));
+  localStorage.setItem("historique_backup", JSON.stringify(historique));
+
+  console.log("💾 Sauvegarde OK");
+}
+
+function importExcel(event) {
+  let file = event.target.files[0];
+  if (!file) return;
+
+  let reader = new FileReader();
+
+  reader.onload = function(e) {
+    let data = new Uint8Array(e.target.result);
+    let workbook = XLSX.read(data, { type: "array" });
+
+    let sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+    // 🔥 ON FORCE FORMAT TABLEAU
+    let rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    if (rows.length <= 1) {
+      alert("❌ Fichier vide !");
+      return;
+    }
+
+    let count = 0;
+
+    // ⚠️ on saute la 1ère ligne (header)
+    rows.slice(1).forEach((row) => {
+
+      let nom = row[0];
+      let qte = Number(row[1]);
+      let prix = Number(row[2]);
+
+      if (!nom || isNaN(qte) || isNaN(prix)) return;
+
+      nom = String(nom).trim();
+
+      let existant = produits.find(p =>
+        normaliser(p.nom) === normaliser(nom)
+      );
+
+      if (existant) {
+        existant.quantite += qte;
+        existant.prix = prix;
+      } else {
+        produits.push({
+          nom: nom,
+          quantite: qte,
+          prix: prix
+        });
+      }
+
+      count++;
+    });
+
+    sauvegardeAuto();
+    afficherStock();
+
+    alert("✅ " + count + " produits importés !");
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+function ajouterLigne() {
+  let container = document.getElementById("zoneProduits");
+
+  let index = Date.now(); // unique ID
+
+  let div = document.createElement("div");
+  div.id = "ligne_" + index;
+
+  div.innerHTML = `
+    <input type="text" placeholder="Produit" id="nom_${index}">
+    <input type="number" placeholder="Qté" id="qte_${index}">
+    <button onclick="supprimerLigne(${index})" class="btn-delete">❌</button>
+  `;
+
+  container.appendChild(div);
+
+  lignes.push(index);
+}
+function calculTotalAuto() {
+  let total = 0;
+  let details = "🧾 Détail vente\n\n";
+
+  lignes.forEach(i => {
+    let nom = document.getElementById("nom_" + i)?.value;
+    let qte = parseInt(document.getElementById("qte_" + i)?.value);
+
+    if (!nom || isNaN(qte) || qte <= 0) return;
+
+    let produit = produits.find(p =>
+      normaliser(p.nom).includes(normaliser(nom))
+    );
+
+    if (!produit) {
+      details += `❌ ${nom} (introuvable)\n\n`;
+      return;
+    }
+
+    // ⚠️ STOCK INSUFFISANT
+    if (produit.quantite < qte) {
+      details += `⚠️ ${produit.nom}\nStock: ${produit.quantite} | demandé: ${qte}\n\n`;
+      return;
+    }
+
+    let sousTotal = produit.prix * qte;
+    total += sousTotal;
+
+    details += `${produit.nom}\n${qte} x ${formatAriary(produit.prix)} = ${formatAriary(sousTotal)}\n\n`;
+  });
+
+  details += "💰 TOTAL : " + formatAriary(total);
+
+  document.getElementById("totalAuto").innerText = details;
+}
+document.addEventListener("input", function(e) {
+  if (e.target.id.startsWith("nom_") || e.target.id.startsWith("qte_")) {
+    calculTotalAuto();
+  }
+});
+function vendre() {
+
+  if (lignes.length === 0) {
+    alert("Ajoute au moins un produit");
+    return;
+  }
+
+  let totalGeneral = 0;
+  let detailsHTML = `
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h3 style="margin:0;">🧾 Vente effectuée</h3>
+    <button onclick="fermerResultat()" class="btn-delete">❌</button>
+  </div>
+`;
+
+  // 🔍 Vérification
+  for (let i of lignes) {
+    let nom = document.getElementById("nom_" + i)?.value;
+    let qte = parseInt(document.getElementById("qte_" + i)?.value);
+
+    if (!nom || isNaN(qte) || qte <= 0) continue;
+
+    let produit = produits.find(p =>
+      normaliser(p.nom).includes(normaliser(nom))
+    );
+
+    if (!produit) {
+      alert("Produit introuvable: " + nom);
+      return;
+    }
+
+    if (produit.quantite < qte) {
+      alert(`tsy ampy ny ambony ao @ stock ho an'i ${produit.nom}`);
+      return;
+    }
+  }
+
+  // ✅ Vente
+  for (let i of lignes) {
+
+    let nom = document.getElementById("nom_" + i)?.value;
+    let qte = parseInt(document.getElementById("qte_" + i)?.value);
+
+    if (!nom || isNaN(qte) || qte <= 0) continue;
+
+    let produit = produits.find(p =>
+      normaliser(p.nom).includes(normaliser(nom))
+    );
+
+    let sousTotal = produit.prix * qte;
+
+    produit.quantite -= qte;
+    totalGeneral += sousTotal;
+
+    // 🎨 couleur stock
+    let classeStock = produit.quantite <= 5 ? "stock-faible" : "stock-ok";
+
+    // 🧾 affichage
+    detailsHTML += `
+      <div style="margin-bottom:10px;">
+        <strong>${produit.nom}</strong><br>
+        ${qte} x ${formatAriary(produit.prix)} = ${formatAriary(sousTotal)}<br>
+        ambony ao @stock: <span class="${classeStock}">${produit.quantite}</span>
+      </div>
+    `;
+
+    // historique
+    historique.push({
+      type: "vente",
+      nom: produit.nom,
+      quantite: qte,
+      prix: produit.prix,
+      total: sousTotal,
+      date: new Date().toISOString()
+    });
+  }
+
+  detailsHTML += `<hr><strong>💰 TOTAL: ${formatAriary(totalGeneral)}</strong>`;
+
+  document.getElementById("resultatVente").innerHTML = detailsHTML;
+
+  sauvegardeAuto();
+
+  // reset
+  document.getElementById("zoneProduits").innerHTML = "";
+  lignes = [];
+  
+}
+function supprimerLigne(index) {
+  document.getElementById("ligne_" + index).remove();
+  lignes = lignes.filter(i => i !== index);
+  calculTotalAuto();
+}
+function fermerResultat() {
+  document.getElementById("resultatVente").innerHTML = "";
+  document.getElementById("totalAuto").innerText = "";
+}
+
+window.onload = async function () {
+await chargerDonnees();
+afficherStock();
+};
+
+
+// bouton install
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  let btn = document.getElementById("installBtn");
+  if (btn) {
+    btn.style.display = "flex";
+    btn.innerHTML = "📲 Installer maintenant";
+  }
+});
+
+// app déjà installée
+window.addEventListener("appinstalled", () => {
+  let btn = document.getElementById("installBtn");
+  if (btn) {
+    btn.innerHTML = "✅ Déjà installée";
+    btn.style.opacity = "0.6";
+  }
+});
+
+// fallback affichage
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    if (!deferredPrompt) {
+      let btn = document.getElementById("installBtn");
+      if (btn) btn.style.display = "flex";
+    }
+  }, 3000);
+});
+function installerApp() {
+  if (!deferredPrompt) return;
+
+  deferredPrompt.prompt();
+
+  deferredPrompt.userChoice.then((choiceResult) => {
+    if (choiceResult.outcome === "accepted") {
+      console.log("✅ App installée");
+    } else {
+      console.log("❌ Installation refusée");
+    }
+
+    deferredPrompt = null;
+    document.getElementById("installBtn").style.display = "none";
+  });
+}
+
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .then(() => console.log("✅ Service Worker OK"))
+    .catch(err => console.log("❌ SW erreur", err));
+}
+</script>
+</body>
+</html>
