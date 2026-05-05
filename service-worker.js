@@ -3,8 +3,11 @@ const CACHE_NAME = "boutique-cache-v1";
 const urlsToCache = [
   "./",
   "./index.html",
+  "./manifest.json",
   "./localforage.min.js",
-  "./xlsx.full.min.js"
+  "./xlsx.full.min.js",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", event => {
