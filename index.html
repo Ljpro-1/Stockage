@@ -295,10 +295,22 @@ input {
 <meta name="theme-color" content="#2c3e50">
 </head>
 
-<body>
+<body> 
+<!-- PAGE LOGIN -->
+<div id="authPage" class="page active">
+
+  <h2>🔐 Connexion</h2>
+
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Mot de passe">
+
+  <button class="btn btn-sell" onclick="login()">Se connecter</button>
+  <button class="btn btn-add" onclick="register()">Créer compte</button>
+
+</div>
 
 <!-- PAGE 1 -->
-<div id="home" class="page active">
+<div id="home" class="page">
 
   <h1>👋 Tongasoa</h1>
 
@@ -326,6 +338,9 @@ input {
   </button>
 <button class="btn btn-sell" onclick="showPage('historySell')">
   📜 Historique Vente
+</button>
+<button class="btn btn-stock" onclick="showPage('abonnement')">
+  💳 Mon abonnement
 </button>
 <button id="installBtn" class="btn-install" onclick="installerApp()">
   📲 Installer l'application
@@ -421,6 +436,7 @@ input {
 </div>
 
 <div id="historySell" class="page">
+  
 
 <div class="header">
   <button class="top-back-btn" onclick="showPage('home')">   ⬅ Retour </button>
@@ -440,12 +456,312 @@ input {
 <div class="card">
   <div id="listeVente"></div>
 </div>
-  
+</div>
+<div id="abonnement" class="page">
 
+  <div class="header">
+    <button class="top-back-btn" onclick="showPage('home')">⬅ Retour</button>
+    <h1>Mon abonnement</h1>
+  </div>
+
+  <div class="card" id="infoAbonnement">
+  </div>
 
 </div>
 
-<!-- 🔥 ICI tu ajoutes Firebase -->
+</div>
+
+<!-- 🔒 BLOQUAGE ABONNEMENT (AJOUT ICI) -->
+<div id="blocage" style="display:none; text-align:center; padding:30px;">
+  <h2>🔒 Abonnement requis</h2>
+  <p>Veuillez payer pour continuer</p>
+
+  <button onclick="payer()">
+    📲 Payer maintenant
+  </button>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
+import { getFirestore, doc, getDoc, setDoc } 
+from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDoopM3sF98UkjjGsukP_Dh_UjnSFFbotw",
+  authDomain: "stockage-69161.firebaseapp.com",
+  projectId: "stockage-69161",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let userId = null;
+
+// 🔐 REGISTER
+window.register = async function () {
+  let email = document.getElementById("email").value;
+  let pass = document.getElementById("password").value;
+
+  if (!email || !pass) {
+    alert("Remplis tous les champs");
+    return;
+  }
+
+  try {
+    let userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+    userId = userCredential.user.uid;
+
+    let now = new Date();
+
+    let essaiFin = new Date();
+    essaiFin.setDate(now.getDate() + 2); // 🎁 2 jours essai
+
+await setDoc(doc(db, "users", userId), {
+  email: email, // 🔥 AJOUT IMPORTANT
+  abonnementActif: false,
+  dateCreation: now.toISOString(),
+  dateExpiration: essaiFin.toISOString(),
+  dernierAbonnement: null,
+  prochainAbonnement: null,
+  type: "essai"
+});
+
+    alert("🎉 Compte créé avec 2 jours d'essai !");
+    debloquerApp();
+showPage("home");
+  } catch (error) {
+    alert(error.message);
+  }
+};
+// 🔑 LOGIN
+window.login = async function () {
+  let email = document.getElementById("email").value;
+  let pass = document.getElementById("password").value;
+
+  try {
+    let user = await signInWithEmailAndPassword(auth, email, pass);
+    userId = user.user.uid;
+
+    await verifierAbonnement(); // ✅ AJOUT OBLIGATOIRE
+
+  } catch (error) {
+    alert("Erreur login: " + error.message);
+  }
+};
+// 🔄 DETECTION USER
+onAuthStateChanged(auth, async (user) => {
+
+  if (user) {
+    userId = user.uid;
+
+    document.getElementById("authPage").style.display = "none";
+
+    await verifierAbonnement();
+
+  } else {
+
+    // 🔥 MODE OFFLINE
+    let local = localStorage.getItem("abonnement_local");
+
+    if (local) {
+      let data = JSON.parse(local);
+      let today = new Date();
+      let expiration = data.dateExpiration ? new Date(data.dateExpiration) : null;
+
+      // ✅ ESSAI OFFLINE
+      if (data.type === "essai" && expiration && today <= expiration) {
+        debloquerApp();
+        return;
+      }
+
+      // ✅ ABONNEMENT OFFLINE
+      if (data.abonnementActif === true && expiration && today <= expiration) {
+        debloquerApp();
+        return;
+      }
+    }
+
+    // ❌ SINON LOGIN OBLIGATOIRE
+    document.getElementById("authPage").style.display = "block";
+    document.getElementById("home").style.display = "none";
+  }
+});
+async function verifierAbonnement() {
+
+  if (!userId) {
+    bloquerApp();
+    return;
+  }
+
+  let today = new Date();
+
+  try {
+    // 🔥 FIREBASE (si connecté)
+    let ref = doc(db, "users", userId);
+    let snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      bloquerApp();
+      return;
+    }
+
+    let data = snap.data();
+
+    // 🔥 sauvegarde locale pour offline
+    localStorage.setItem("abonnement_local", JSON.stringify(data));
+
+    let expiration = data.dateExpiration
+      ? new Date(data.dateExpiration)
+      : null;
+
+    // ✅ ESSAI 2 JOURS (ONLINE)
+    if (data.type === "essai" && expiration && today <= expiration) {
+      debloquerApp();
+      return;
+    }
+
+    // ✅ ABONNEMENT ACTIF (ONLINE)
+    if (data.abonnementActif === true && expiration && today <= expiration) {
+      debloquerApp();
+      return;
+    }
+
+    // ❌ SINON BLOQUÉ
+    bloquerApp();
+
+  } catch (error) {
+
+    // 🔥 MODE OFFLINE
+    let local = localStorage.getItem("abonnement_local");
+
+    if (local) {
+      let data = JSON.parse(local);
+      let expiration = data.dateExpiration
+        ? new Date(data.dateExpiration)
+        : null;
+
+      // ✅ ESSAI OFFLINE
+      if (data.type === "essai" && expiration && today <= expiration) {
+        debloquerApp();
+        return;
+      }
+
+      // ✅ ABONNEMENT OFFLINE
+      if (data.abonnementActif === true && expiration && today <= expiration) {
+        debloquerApp();
+        return;
+      }
+    }
+
+    // ❌ SI RIEN → BLOQUÉ
+    bloquerApp();
+  }
+}
+
+
+window.payer = async function () {
+
+  let numero = "0372053137";
+  let montant = "5000 Ar";
+
+  alert(
+`📲 Paiement Mobile Money
+
+Envoyez ${montant} à :
+${numero}
+
+⚠️ rehefa mandefa ny vola ianao dia ataovy refference ny email nanokafanao ilay compte`
+  );
+
+  let ok = confirm("J'ai effectué le paiement ?");
+  if (!ok) return;
+
+  // 🔥 ENVOI DEMANDE (sans activer abonnement)
+  await setDoc(doc(db, "paiements", userId), {
+    userId: userId,
+    date: new Date().toISOString(),
+    status: "en_attente"
+  });
+
+  alert("⏳ Demande envoyée. En attente de validation.");
+};
+// 🔒 BLOQUER
+window.bloquerApp = function () {
+  document.querySelectorAll(".page").forEach(p => p.style.display = "none");
+
+  document.getElementById("blocage").style.display = "block";
+};
+
+// 🔓 DEBLOQUER
+window.debloquerApp = function () {
+  document.getElementById("blocage").style.display = "none";
+
+  document.querySelectorAll(".page").forEach(p => p.style.display = "none");
+  document.getElementById("home").style.display = "block";
+};
+ window.afficherAbonnement = async function () {
+
+  let div = document.getElementById("infoAbonnement");
+
+  if (!userId) {
+    div.innerHTML = "Chargement...";
+    return;
+  }
+
+  try {
+    // 🔥 récupération Firebase
+    let ref = doc(db, "users", userId);
+    let snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      div.innerHTML = "Aucune information";
+      return;
+    }
+
+    let data = snap.data();
+
+    function formatDate(d) {
+      if (!d) return "Aucune";
+      let date = new Date(d);
+      return isNaN(date) ? "Aucune" : date.toLocaleDateString();
+    }
+
+    let expiration = formatDate(data.dateExpiration);
+
+    // 🔥 MESSAGE ESSAI
+    let messageEssai = "";
+
+if (data.type === "essai" && data.dateExpiration) {
+  messageEssai = `
+    <p style="color:red; font-weight:bold;">
+      ⏳ Tapitra amin'ny <strong>${expiration}</strong> ny andrana
+    </p>
+    <p>
+      Manao abonnement mialoha mba tsy ho tapaka ny fampiasana ny application
+    </p>
+  `;
+}
+    div.innerHTML = `
+      <p><strong>📅 Dernier abonnement :</strong> ${formatDate(data.dernierAbonnement)}</p>
+      <p><strong>⏳ Date d'expiration :</strong> ${expiration}</p>
+      <p><strong>🔁 Prochain abonnement :</strong> ${formatDate(data.prochainAbonnement)}</p>
+
+      ${messageEssai}
+
+      <button onclick="payer()" class="action-btn" style="width:100%; margin-top:15px;">
+        💳 S'abonner maintenant
+      </button>
+    `;
+
+  } catch (error) {
+    console.error(error);
+    div.innerHTML = "Erreur chargement abonnement";
+  }
+};
+</script>
 
 <script src="localforage.min.js"></script>
 <script src="xlsx.full.min.js"></script>
@@ -453,37 +769,29 @@ input {
 
 
 <script>
+
+
+
+let produits = [];
+let historique = [];
+let lignes = [];
+
 let deferredPrompt = null;
 
 function showPage(pageId) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(pageId).classList.add("active");
 
+  // afficher la page
+  document.querySelectorAll(".page").forEach(p => {
+    p.style.display = "none";
+  });
+
+  let page = document.getElementById(pageId);
+  if (page) page.style.display = "block";
+
+  // charger contenu si besoin
   if (pageId === "stock") afficherStock();
   if (pageId === "historySell") afficherHistoriqueVente();
-}
-/* STOCKAGE LOCAL */
-let produits = [];
-let historique = [];
-let panier = [];
-
-let lignes = [];
-// charger depuis localForage
-async function chargerDonnees() {
-
-  produits = await localforage.getItem("produits");
-  historique = await localforage.getItem("historique");
-
-  // 🔥 SI VIDE → utiliser backup
-  if (!produits) {
-    produits = JSON.parse(localStorage.getItem("produits_backup")) || [];
-  }
-
-  if (!historique) {
-    historique = JSON.parse(localStorage.getItem("historique_backup")) || [];
-  }
-
-  console.log("✅ Données chargées");
+  if (pageId === "abonnement") afficherAbonnement();
 }
 function ajouterProduit() {
   let nom = document.getElementById("nomProduit").value.trim();
@@ -967,8 +1275,8 @@ function fermerResultat() {
 }
 
 window.onload = async function () {
-await chargerDonnees();
-afficherStock();
+  await chargerDonnees();
+  afficherStock();
 };
 
 
@@ -992,7 +1300,10 @@ window.addEventListener("appinstalled", () => {
     btn.style.opacity = "0.6";
   }
 });
-
+window.resetApp = async function() {
+  await auth.signOut();
+  location.reload();
+};
 // fallback affichage
 window.addEventListener("load", () => {
   setTimeout(() => {
@@ -1002,6 +1313,54 @@ window.addEventListener("load", () => {
     }
   }, 3000);
 });
+async function chargerDonnees() {
+  let p = await localforage.getItem("produits");
+  let h = await localforage.getItem("historique");
+
+  if (p) produits = p;
+  if (h) historique = h;
+
+  // 🔥 fallback si localforage vide
+  if (!p) {
+    let backupP = localStorage.getItem("produits_backup");
+    if (backupP) produits = JSON.parse(backupP);
+  }
+
+  if (!h) {
+    let backupH = localStorage.getItem("historique_backup");
+    if (backupH) historique = JSON.parse(backupH);
+  }
+
+  console.log("📦 Données chargées");
+}
+async function envoyerDemandePaiement() {
+
+  if (!userId) return;
+
+  await setDoc(doc(db, "paiements", userId), {
+    status: "en_attente",
+    date: new Date().toISOString()
+  });
+
+  alert("⏳ Paiement envoyé. En attente de validation.");
+}
+async function activerAbonnementAuto() {
+
+  let now = new Date();
+  let expiration = new Date();
+  expiration.setDate(now.getDate() + 30);
+
+  let data = {
+    
+    dateExpiration: expiration.toISOString()
+  };
+
+  await setDoc(doc(db, "users", userId), data, { merge: true });
+
+  localStorage.setItem("abonnement", JSON.stringify(data));
+
+  alert("✅ Abonnement activé !");
+}
 function installerApp() {
   if (!deferredPrompt) return;
 
