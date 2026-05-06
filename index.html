@@ -563,102 +563,80 @@ onAuthStateChanged(auth, async (user) => {
 
   } else {
 
-    // 🔥 MODE OFFLINE
-    let local = localStorage.getItem("abonnement_local");
+    userId = null;
 
-    if (local) {
-      let data = JSON.parse(local);
-      let today = new Date();
-      let expiration = data.dateExpiration ? new Date(data.dateExpiration) : null;
+    // 🔥 vérifier abonnement local seulement
+    await verifierAbonnement();
 
-      // ✅ ESSAI OFFLINE
-      if (data.type === "essai" && expiration && today <= expiration) {
-        debloquerApp();
-        return;
-      }
-
-      // ✅ ABONNEMENT OFFLINE
-      if (data.abonnementActif === true && expiration && today <= expiration) {
-        debloquerApp();
-        return;
-      }
-    }
-
-    // ❌ SINON LOGIN OBLIGATOIRE
     document.getElementById("authPage").style.display = "block";
     document.getElementById("home").style.display = "none";
   }
+
 });
 async function verifierAbonnement() {
 
-  if (!userId) {
+  let today = new Date();
+// 🔥 SYNC FIREBASE → LOCAL
+if (userId) {
+  let ref = doc(db, "users", userId);
+  let snap = await getDoc(ref);
+  
+  if (snap.exists()) {
+    let firebaseData = snap.data();
+    
+    localStorage.setItem("abonnement_local", JSON.stringify(firebaseData));
+  }
+}
+  // 🔥 1. récupérer local (offline)
+  let local = localStorage.getItem("abonnement_local");
+
+  if (!local) {
     bloquerApp();
     return;
   }
 
-  let today = new Date();
+  let data = JSON.parse(local);
 
-  try {
-    // 🔥 FIREBASE (si connecté)
-    let ref = doc(db, "users", userId);
-    let snap = await getDoc(ref);
+  let expiration = data.dateExpiration
+    ? new Date(data.dateExpiration)
+    : null;
 
-    if (!snap.exists()) {
+  // 🔐 2. ANTI-TRICHE DATE
+  let lastOnline = localStorage.getItem("lastOnlineTime");
+
+  if (lastOnline) {
+    let last = new Date(lastOnline);
+
+    if (today < last) {
+      alert("⚠️ Date téléphone modifiée !");
       bloquerApp();
       return;
     }
-
-    let data = snap.data();
-
-    // 🔥 sauvegarde locale pour offline
-    localStorage.setItem("abonnement_local", JSON.stringify(data));
-
-    let expiration = data.dateExpiration
-      ? new Date(data.dateExpiration)
-      : null;
-
-    // ✅ ESSAI 2 JOURS (ONLINE)
-    if (data.type === "essai" && expiration && today <= expiration) {
-      debloquerApp();
-      return;
-    }
-
-    // ✅ ABONNEMENT ACTIF (ONLINE)
-    if (data.abonnementActif === true && expiration && today <= expiration) {
-      debloquerApp();
-      return;
-    }
-
-    // ❌ SINON BLOQUÉ
-    bloquerApp();
-
-  } catch (error) {
-
-    // 🔥 MODE OFFLINE
-    let local = localStorage.getItem("abonnement_local");
-
-    if (local) {
-      let data = JSON.parse(local);
-      let expiration = data.dateExpiration
-        ? new Date(data.dateExpiration)
-        : null;
-
-      // ✅ ESSAI OFFLINE
-      if (data.type === "essai" && expiration && today <= expiration) {
-        debloquerApp();
-        return;
-      }
-
-      // ✅ ABONNEMENT OFFLINE
-      if (data.abonnementActif === true && expiration && today <= expiration) {
-        debloquerApp();
-        return;
-      }
-    }
-
-    // ❌ SI RIEN → BLOQUÉ
-    bloquerApp();
   }
+
+  // 🔁 sauvegarde date actuelle
+  localStorage.setItem("lastOnlineTime", today.toISOString());
+
+  // =========================
+  // 🎁 ESSAI
+  // =========================
+  if (data.type === "essai" && expiration && today <= expiration) {
+    debloquerApp();
+    return;
+  }
+
+  // =========================
+  // 💳 ABONNEMENT
+  // =========================
+  if (data.abonnementActif === true && expiration && today <= expiration) {
+    debloquerApp();
+    return;
+  }
+
+  // =========================
+  // ❌ BLOQUÉ
+  // =========================
+  bloquerApp();
 }
 
 
@@ -1276,9 +1254,9 @@ function fermerResultat() {
 
 window.onload = async function () {
   await chargerDonnees();
+  await verifierAbonnement(); // 🔥 ICI
   afficherStock();
 };
-
 
 // bouton install
 window.addEventListener("beforeinstallprompt", (e) => {
