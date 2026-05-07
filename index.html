@@ -561,16 +561,15 @@ onAuthStateChanged(auth, async (user) => {
 
     await verifierAbonnement();
 
-  } else {
+} else {
 
-    userId = null;
+  userId = null;
 
-    // 🔥 vérifier abonnement local seulement
-    await verifierAbonnement();
+  document.getElementById("blocage").style.display = "none";
 
-    document.getElementById("authPage").style.display = "block";
-    document.getElementById("home").style.display = "none";
-  }
+  document.getElementById("authPage").style.display = "block";
+  document.getElementById("home").style.display = "none";
+}
 
 });
 async function verifierAbonnement() {
@@ -622,9 +621,23 @@ if (userId) {
 
   let data = JSON.parse(local);
 
-  let expiration = data.dateExpiration
-    ? new Date(data.dateExpiration)
-    : null;
+let expiration = null;
+
+if (data.dateExpiration) {
+
+  // Firestore Timestamp JSON
+  if (data.dateExpiration.seconds) {
+
+    expiration = new Date(
+      data.dateExpiration.seconds * 1000
+    );
+
+  } else {
+
+    expiration = new Date(data.dateExpiration);
+
+  }
+}
 
   // 🔐 2. ANTI-TRICHE DATE
   let lastOnline = localStorage.getItem("lastOnlineTime");
@@ -727,11 +740,26 @@ window.debloquerApp = function () {
     let data = snap.data();
 
     function formatDate(d) {
-      if (!d) return "Aucune";
-      let date = new Date(d);
-      return isNaN(date) ? "Aucune" : date.toLocaleDateString();
-    }
 
+  if (!d) return "Aucune";
+
+  let date;
+
+  // Firestore Timestamp
+  if (d.seconds) {
+
+    date = new Date(d.seconds * 1000);
+
+  } else {
+
+    date = new Date(d);
+
+  }
+
+  return isNaN(date)
+    ? "Aucune"
+    : date.toLocaleDateString("fr-FR");
+}
     let expiration = formatDate(data.dateExpiration);
 
     // 🔥 MESSAGE ESSAI
@@ -1279,10 +1307,8 @@ function fermerResultat() {
 
 window.onload = async function () {
   await chargerDonnees();
-  await verifierAbonnement(); // 🔥 ICI
   afficherStock();
 };
-
 // bouton install
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
@@ -1423,5 +1449,6 @@ if ("serviceWorker" in navigator) {
     .catch(err => console.log("❌ SW erreur", err));
 }
 </script>
+
 </body>
 </html>
