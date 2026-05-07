@@ -591,9 +591,34 @@ if (userId) {
   let local = localStorage.getItem("abonnement_local");
 
   if (!local) {
+
+  // essayer firebase directement
+  if (userId) {
+
+    let ref = doc(db, "users", userId);
+    let snap = await getDoc(ref);
+
+    if (snap.exists()) {
+
+      let firebaseData = snap.data();
+
+      localStorage.setItem(
+        "abonnement_local",
+        JSON.stringify(firebaseData)
+      );
+
+      local = JSON.stringify(firebaseData);
+
+    } else {
+      bloquerApp();
+      return;
+    }
+
+  } else {
     bloquerApp();
     return;
   }
+}
 
   let data = JSON.parse(local);
 
@@ -1325,17 +1350,51 @@ async function envoyerDemandePaiement() {
 async function activerAbonnementAuto() {
 
   let now = new Date();
-  let expiration = new Date();
-  expiration.setDate(now.getDate() + 30);
 
+  // expiration dans 30 jours
+  let baseDate = now;
+
+// si ancien abonnement/essai encore actif
+let ancienExpiration = localStorage.getItem("abonnement_local");
+
+if (ancienExpiration) {
+
+  let dataLocal = JSON.parse(ancienExpiration);
+
+  if (dataLocal.dateExpiration) {
+
+    let oldExp = new Date(dataLocal.dateExpiration);
+
+    // si encore valide
+    if (oldExp > now) {
+      baseDate = oldExp;
+    }
+  }
+}
+
+// ajouter 30 jours après base
+let expiration = new Date(baseDate);
+expiration.setDate(expiration.getDate() + 30);
   let data = {
-    
+
+    abonnementActif: true,
+    type: "abonnement",
+
+    dernierAbonnement: now.toISOString(),
+
+    prochainAbonnement: expiration.toISOString(),
+
     dateExpiration: expiration.toISOString()
   };
 
+  // sauvegarde firebase
   await setDoc(doc(db, "users", userId), data, { merge: true });
 
-  localStorage.setItem("abonnement", JSON.stringify(data));
+  // sauvegarde local
+  localStorage.setItem(
+    "abonnement_local",
+    JSON.stringify(data)
+  );
 
   alert("✅ Abonnement activé !");
 }
