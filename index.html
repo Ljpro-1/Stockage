@@ -316,9 +316,9 @@ input {
 
   <div class="card">
     <p>
-      tongasoa eto amin'ny sehatra fitantanana varotra,<br>
-      natao hanamorana sy anafainganana ny fitantanana ny varotra<br>
-      fa indrindra ny fanenana ny fahadisoana
+       Bienvenue dans l’espace de gestion des ventes,<br>
+      Conçu pour simplifier et accélérer la gestion des ventes<br>
+      tout en réduisant les erreurs
     </p>
   </div>
 <div class="header">
@@ -326,15 +326,15 @@ input {
   <p>Application de gestion de vente</p>
 </div>
   <button class="btn btn-add" onclick="showPage('add')">
-    ➕ Ampiditra entana
+    ➕ Ajouter produit
   </button>
 
   <button class="btn btn-sell" onclick="showPage('sell')">
-    💰 Hivarotra
+    💰 Effectuer une vente
   </button>
 
   <button class="btn btn-stock" onclick="showPage('stock')">
-    📦 Hijery stock
+    📦 Voir le stock
   </button>
 <button class="btn btn-sell" onclick="showPage('historySell')">
   📜 Historique Vente
@@ -353,22 +353,22 @@ input {
 
 <div class="header">
   <button class="top-back-btn" onclick="showPage('home')">   ⬅ Retour </button>
-  <h1>Ampiditra entana</h1>
-  <p>Manampy entana vaovao</p>
+  <h1>Ajouter un produit</h1>
+  <p>Ajouter un nouveau produit</p>
 </div>
 
   <div class="card">
 
     <h2>Formulaire</h2>
 
-    <input type="text" id="nomProduit" placeholder="Anaran'ny entana">
+    <input type="text" id="nomProduit" placeholder="Nom du produit">
 
-    <input type="number" id="quantiteProduit" placeholder="Ny isany (nombre)">
+    <input type="number" id="quantiteProduit" placeholder="Quantité">
 
-    <input type="number" id="prixProduit" placeholder="Vidiny">
+    <input type="number" id="prixProduit" placeholder="Prix">
 
     <button class="action-btn" onclick="ajouterProduit()">
-      ✔️ ampidirina
+      ✔️ Ajouter
     </button>
 
   </div>
@@ -382,7 +382,7 @@ input {
 <div class="header">
   <button class="top-back-btn" onclick="showPage('home')">   ⬅ Retour </button>
   <h1>Hivarotra</h1>
-  <p>Fivarotana entana</p>
+  <p>Vente de produits</p>
 </div>
 
 <div class="card">
@@ -392,7 +392,7 @@ input {
   <div id="zoneProduits"></div>
 
   <button class="action-btn" onclick="ajouterLigne()">
-    ➕ mampiditra entana
+➕ Ajouter produit
   </button>
 
   <button class="action-btn" onclick="vendre()">
@@ -411,7 +411,7 @@ input {
 <div class="header">
   <button class="top-back-btn" onclick="showPage('home')">   ⬅ Retour </button>
   <h1>Stock</h1>
-  <p>Lisitry ny entana</p>
+  <p>Liste des produits</p>
 </div>
 
   <div class="card">
@@ -474,7 +474,11 @@ input {
 <!-- 🔒 BLOQUAGE ABONNEMENT (AJOUT ICI) -->
 <div id="blocage" style="display:none; text-align:center; padding:30px;">
   <h2>🔒 Abonnement requis</h2>
-  <p>Veuillez payer pour continuer</p>
+  <p>
+Veuillez effectuer votre paiement via
+Western Union ou Taptap Send
+pour continuer.
+</p>
 
   <button onclick="payer()">
     📲 Payer maintenant
@@ -489,9 +493,13 @@ import { getFirestore, doc, getDoc, setDoc }
 from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDoopM3sF98UkjjGsukP_Dh_UjnSFFbotw",
-  authDomain: "stockage-69161.firebaseapp.com",
-  projectId: "stockage-69161",
+  apiKey: "AIzaSyARB-AyNgzyHbQgdu4mlEPFuUBuvB8RIx4",
+  authDomain: "toutique.firebaseapp.com",
+  projectId: "toutique",
+  storageBucket: "toutique.firebasestorage.app",
+  messagingSenderId: "466013819789",
+  appId: "1:466013819789:web:feaa88e5dbcb91adf1e3c4",
+  measurementId: "G-MR2BDFG8JV"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -677,32 +685,79 @@ if (data.dateExpiration) {
   bloquerApp();
 }
 
-
 window.payer = async function () {
 
-  let numero = "0372053137";
-  let montant = "5000 Ar";
+  // 🔥 Référence obligatoire = email du compte
+  let email = auth.currentUser?.email || "Email introuvable";
 
-  alert(
-`📲 Paiement Mobile Money
+  alert(`💳 Paiement abonnement
 
-Envoyez ${montant} à :
-${numero}
+Vous pouvez payer via :
 
-⚠️ rehefa mandefa ny vola ianao dia ataovy refference ny email nanokafanao ilay compte`
-  );
+🌍 Western Union
+📲 Taptap Send
 
-  let ok = confirm("J'ai effectué le paiement ?");
-  if (!ok) return;
+📱 Mobile Money Madagascar :
+• MVola
+• Orange Money
+• Airtel Money
 
-  // 🔥 ENVOI DEMANDE (sans activer abonnement)
+━━━━━━━━━━━━━━━
+
+👤 Nom du bénéficiaire :
+Andrianjanahary Fankalazana Dinah
+
+🌍 Pays :
+Madagascar
+
+📧 RÉFÉRENCE OBLIGATOIRE :
+${email}
+
+━━━━━━━━━━━━━━━
+
+⚠️ IMPORTANT :
+Utilisez EXACTEMENT cet email
+comme référence du paiement.
+
+Après paiement, envoyez :
+
+• Le code MTCN
+OU
+• Le numéro de transfert Taptap Send
+OU
+• Le numéro de transaction Mobile Money
+`);
+
+  let reference = prompt(`Entrez :
+
+• Le code MTCN
+OU
+• Le numéro Taptap Send
+OU
+• Le numéro de transaction Mobile Money`);
+
+  if (!reference) {
+    alert("Paiement annulé");
+    return;
+  }
+
   await setDoc(doc(db, "paiements", userId), {
+
     userId: userId,
+
+    // 🔥 email visible firestore
+    emailReference: email,
+
+    methode: "Western Union / Taptap Send / Mobile Money",
+
+    referencePaiement: reference,
+
     date: new Date().toISOString(),
+
     status: "en_attente"
   });
 
-  alert("⏳ Demande envoyée. En attente de validation.");
+  alert("⏳ Demande envoyée avec succès !");
 };
 // 🔒 BLOQUER
 window.bloquerApp = function () {
@@ -768,24 +823,44 @@ window.debloquerApp = function () {
 if (data.type === "essai" && data.dateExpiration) {
   messageEssai = `
     <p style="color:red; font-weight:bold;">
-      ⏳ Tapitra amin'ny <strong>${expiration}</strong> ny andrana
+      ⏳ Expire le <strong>${expiration}</strong> essaie
     </p>
     <p>
-      Manao abonnement mialoha mba tsy ho tapaka ny fampiasana ny application
+      Abonnez-vous avant expiration pour continuer à utiliser l’application
     </p>
   `;
 }
-    div.innerHTML = `
-      <p><strong>📅 Dernier abonnement :</strong> ${formatDate(data.dernierAbonnement)}</p>
-      <p><strong>⏳ Date d'expiration :</strong> ${expiration}</p>
-      <p><strong>🔁 Prochain abonnement :</strong> ${formatDate(data.prochainAbonnement)}</p>
+div.innerHTML = `
+  <p><strong>📅 Dernier abonnement :</strong> ${formatDate(data.dernierAbonnement)}</p>
 
-      ${messageEssai}
+  <p><strong>⏳ Date d'expiration :</strong> ${expiration}</p>
 
-      <button onclick="payer()" class="action-btn" style="width:100%; margin-top:15px;">
-        💳 S'abonner maintenant
-      </button>
-    `;
+  <p><strong>🔁 Prochain abonnement :</strong> ${formatDate(data.prochainAbonnement)}</p>
+
+  ${messageEssai}
+
+<div style="margin-top:15px;padding:12px;background:#f4f6f9;border-radius:12px;">
+
+  <strong>💳 Méthodes de paiement :</strong><br><br>
+
+💶 Prix abonnement : <strong>0,60 € / mois</strong><br><br>
+
+🌍 Western Union<br>
+Nom : Andrianjanahary Fankalazana Dinah<br><br>
+
+📲 Taptap Send<br>
+Numéro : +261 37 20 531 37<br><br>
+📱 Orange Money : 0372053137<br>
+<br><br>
+  <strong>Pays :</strong><br>
+  Madagascar
+
+</div>
+
+  <button onclick="payer()" class="action-btn" style="width:100%; margin-top:15px;">
+    💳 S'abonner maintenant
+  </button>
+`;
 
   } catch (error) {
     console.error(error);
@@ -830,7 +905,7 @@ function ajouterProduit() {
   let prix = parseFloat(document.getElementById("prixProduit").value);
 
   if (!nom || !qte || !prix) {
-    alert("Fenoy daholo ny banga !");
+    alert("Veuillez remplir tous les champs !");
     return;
   }
 
@@ -844,7 +919,7 @@ function ajouterProduit() {
     // 👉 option: mettre à jour prix aussi
     existant.prix = prix;
 
-    alert("vokatra efa misy,  ✔️\nisa mitombo");
+    alert("Produit déjà existant ✔️\nQuantité mise à jour");
   } else {
     // 👉 nouveau produit
     produits.push({
@@ -887,7 +962,10 @@ function supprimerProduit(index) {
   afficherStock(); // refresh
 }
 function normaliser(txt) {
-  return txt
+
+  if (!txt) return "";
+
+  return String(txt)
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
@@ -920,7 +998,7 @@ filtres.sort((a, b) => a.nom.localeCompare(b.nom));
     div.innerHTML = `
       <strong>${p.nom}</strong><br>
       isany: <span class="${alerte}">${p.quantite}</span><br>
-      Prix: ${p.prix} Ar<br>
+      Prix: ${p.prix} <br>
 
       <button onclick="supprimerProduit(${vraiIndex})" class="btn-delete">
         ❌ Supprimer
@@ -985,7 +1063,7 @@ function afficherHistoriqueVente() {
           <th>Produit</th>
           <th>Nombre</th>
           <th>PU (Ar)</th>
-          <th>Total (Ar)</th>
+          <th>Total ()</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -1004,8 +1082,8 @@ function afficherHistoriqueVente() {
       row.innerHTML = `
         <td>${h.nom}</td>
         <td>${h.quantite}</td>
-        <td>${formatAriary(h.prix)}</td>
-        <td>${formatAriary(h.total)}</td>
+        <td>${formatPrix(h.prix)}</td>
+        <td>${formatPrix(h.total)}</td>
         <td>
           <button onclick="supprimerHistorique(${h.indexGlobal})" class="btn-delete">
             ❌
@@ -1020,7 +1098,7 @@ function afficherHistoriqueVente() {
 
     let totalDiv = document.createElement("div");
     totalDiv.className = "total-jour";
-    totalDiv.innerHTML = "💰 Total du jour : " + formatAriary(totalJour);
+    totalDiv.innerHTML = "💰 Total du jour : " + formatPrix(totalJour);
 
     container.appendChild(totalDiv);
   });
@@ -1028,7 +1106,7 @@ function afficherHistoriqueVente() {
   // ✅ TOTAL GLOBAL (ICI EXACTEMENT)
   let totalGlobalDiv = document.createElement("div");
   totalGlobalDiv.className = "total-global";
-  totalGlobalDiv.innerHTML = "💰 TOTAL GÉNÉRAL : " + formatAriary(totalGeneral);
+  totalGlobalDiv.innerHTML = "💰 TOTAL GÉNÉRAL : " + formatPrix(totalGeneral);
 
   container.appendChild(totalGlobalDiv);
 }
@@ -1052,9 +1130,6 @@ function supprimerDate(date) {
   sauvegardeAuto();
   
   afficherHistoriqueVente();
-}
-function formatAriary(nombre) {
-  return nombre.toLocaleString("fr-FR") + " Ar";
 }
 
   
@@ -1106,7 +1181,7 @@ function importExcel(event) {
     let rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
     if (rows.length <= 1) {
-      alert("❌ Fichier vide !");
+      alert("❌ Le fichier est vide !");
       return;
     }
 
@@ -1178,8 +1253,10 @@ function calculTotalAuto() {
     if (!nom || isNaN(qte) || qte <= 0) return;
 
     let produit = produits.find(p =>
-      normaliser(p.nom).includes(normaliser(nom))
-    );
+  normaliser(p.nom || "").includes(
+    normaliser(nom || "")
+  )
+);
 
     if (!produit) {
       details += `❌ ${nom} (introuvable)\n\n`;
@@ -1195,10 +1272,10 @@ function calculTotalAuto() {
     let sousTotal = produit.prix * qte;
     total += sousTotal;
 
-    details += `${produit.nom}\n${qte} x ${formatAriary(produit.prix)} = ${formatAriary(sousTotal)}\n\n`;
+    details += `${produit.nom}\n${qte} x ${formatPrix(produit.prix)} = ${formatPrix(sousTotal)}\n\n`;
   });
 
-  details += "💰 TOTAL : " + formatAriary(total);
+  details += "💰 TOTAL : " + formatPrix(total);
 
   document.getElementById("totalAuto").innerText = details;
 }
@@ -1210,7 +1287,7 @@ document.addEventListener("input", function(e) {
 function vendre() {
 
   if (lignes.length === 0) {
-    alert("Ajoute au moins un produit");
+    alert("Ajoutez au moins un produit");
     return;
   }
 
@@ -1239,7 +1316,7 @@ function vendre() {
     }
 
     if (produit.quantite < qte) {
-      alert(`tsy ampy ny ambony ao @ stock ho an'i ${produit.nom}`);
+      alert("Stock insuffisant pour " + produit.nom);
       return;
     }
   }
@@ -1268,8 +1345,8 @@ function vendre() {
     detailsHTML += `
       <div style="margin-bottom:10px;">
         <strong>${produit.nom}</strong><br>
-        ${qte} x ${formatAriary(produit.prix)} = ${formatAriary(sousTotal)}<br>
-        ambony ao @stock: <span class="${classeStock}">${produit.quantite}</span>
+        ${qte} x ${formatPrix(produit.prix)} = ${formatPrix(sousTotal)}<br>
+        Stock restant : <span class="${classeStock}">${produit.quantite}</span>
       </div>
     `;
 
@@ -1284,7 +1361,7 @@ function vendre() {
     });
   }
 
-  detailsHTML += `<hr><strong>💰 TOTAL: ${formatAriary(totalGeneral)}</strong>`;
+  detailsHTML += `<hr><strong>💰 TOTAL: ${formatPrix(totalGeneral)}</strong>`;
 
   document.getElementById("resultatVente").innerHTML = detailsHTML;
 
@@ -1294,6 +1371,9 @@ function vendre() {
   document.getElementById("zoneProduits").innerHTML = "";
   lignes = [];
   
+}
+function formatPrix(nombre) {
+  return Number(nombre).toLocaleString("fr-FR");
 }
 function supprimerLigne(index) {
   document.getElementById("ligne_" + index).remove();
@@ -1452,3 +1532,4 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
